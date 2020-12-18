@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Div100vh from 'react-div-100vh';
 import AppBar from '@material-ui/core/AppBar';
@@ -11,56 +11,95 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
-import InputLabel from '@material-ui/core/InputLabel';
+import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import CSVReader from 'react-csv-reader';
 import { DataGrid } from '@material-ui/data-grid';
+import md5 from 'js-md5';
+import sha256 from 'js-sha256';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
   },
   title: {
     flexGrow: 1,
   },
 }));
 
+const initialState = {
+  columns: [],
+  rows: [],
+  encoding: 'sha256',
+  addedColumnName: 'Added column',
+  field: '',
+};
+
+function reducer(state, action) {
+  return { ...state, ...action };
+}
+
 export default function App() {
   const classes = useStyles();
-  const [rows, setRows] = useState([]);
-  const [columns, setColumns] = useState([]);
-  const [encoding, setEncoding] = useState('sha256');
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const loadData = (data, fileInfo) => {
     let i = 0;
-    setColumns(
-      data[0].map((element) => {
-        i++;
-        return { field: `field_${i}`, headerName: element, width: 150 };
-      })
-    );
-
+    const columns = data[0].map((element) => {
+      i++;
+      return { field: `field_${i}`, headerName: element, width: 250 };
+    });
     data.shift();
 
     let y = 0;
-    setRows(
-      data.map((row) => {
-        y++;
-        const datas = { id: y };
-        i = 0;
-        row.forEach((value) => {
-          i++;
-          datas[`field_${i}`] = value;
-        });
-        return datas;
-      })
+    const rows = data.map((row) => {
+      y++;
+      const datas = { id: y };
+      i = 0;
+      row.forEach((value) => {
+        i++;
+        datas[`field_${i}`] = value;
+      });
+      return datas;
+    });
+
+    dispatch({ columns, rows });
+  };
+
+  const encode = () => {
+    if (!state.field) {
+      throw Error('No field selected');
+    }
+
+    if (!state.addedColumnName) {
+      throw Error('Added column name is empty');
+    }
+
+    const columns = state.columns.filter(
+      (column) => column.field !== 'field_add'
     );
+
+    columns.push({
+      field: 'field_add',
+      headerName: state.addedColumnName,
+      width: 250,
+    });
+
+    const rows = state.rows.map((row) => {
+      let value;
+      if (state.encoding === 'md5') {
+        value = md5(row['field_1']);
+      } else if (state.encoding === 'sha256') {
+        value = sha256(row['field_1']);
+      }
+      row['field_add'] = value;
+      return row;
+    });
+
+    dispatch({ columns, rows });
   };
 
   return (
@@ -83,35 +122,111 @@ export default function App() {
         </Toolbar>
       </AppBar>
       <Grid container>
-        <Grid item xs={10}>
+        <Grid item xs={9}>
           <Box pt={5} pl={5} pr={2} height="90vh" width="100%">
-            <DataGrid rows={rows} columns={columns} pageSize={100} />
+            <DataGrid
+              rows={state.rows}
+              columns={state.columns}
+              pageSize={100}
+            />
           </Box>
         </Grid>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
           <Box pt={5} pr={5} pl={2}>
             <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
+                aria-controls="panel-encoding-content"
+                id="panel-encoding-header"
               >
                 <Typography>Encoding</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <FormControl>
-                  <Select
-                    id="encoding-select"
-                    value={encoding}
-                    onChange={(event) => setEncoding(event.target.value)}
-                  >
-                    <MenuItem value="md5">MD5</MenuItem>
-                    <MenuItem value="sha256">SHA256</MenuItem>
-                  </Select>
-                  <FormHelperText>Choose your proper encoding</FormHelperText>
-                </FormControl>
+                <Grid container>
+                  <Grid item xs={12}>
+                    <Box p={2}>
+                      <FormControl fullWidth={true}>
+                        <TextField
+                          id="column_name"
+                          label="Added column name"
+                          value={state.addedColumnName}
+                          onChange={(event) =>
+                            dispatch({ addedColumnName: event.target.value })
+                          }
+                        />
+                      </FormControl>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box p={2}>
+                      <FormControl fullWidth={true}>
+                        <InputLabel id="encoding-select-label">
+                          Choose encoding
+                        </InputLabel>
+                        <Select
+                          id="encoding-select"
+                          value={state.encoding}
+                          onChange={(event) =>
+                            dispatch({ encoding: event.target.value })
+                          }
+                        >
+                          <MenuItem value="md5">MD5</MenuItem>
+                          <MenuItem value="sha256">SHA256</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  </Grid>
+                </Grid>
               </AccordionDetails>
             </Accordion>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel-fields-content"
+                id="panel-fields-header"
+              >
+                <Typography>Fields</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container>
+                  <Grid item xs={12}>
+                    <Box pl={2} pr={2} pb={2}>
+                      <FormControl fullWidth={true}>
+                        <InputLabel id="field-select-label">
+                          Choose field
+                        </InputLabel>
+                        <Select
+                          id="field-select"
+                          value={state.field}
+                          onChange={(event) =>
+                            dispatch({ field: event.target.value })
+                          }
+                        >
+                          {state.columns.map((item) => (
+                            <MenuItem
+                              key={`key_${item.field}`}
+                              value={item.field}
+                            >
+                              {item.headerName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+            <Box p={2} mx="auto">
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={encode}
+              >
+                Encode
+              </Button>
+            </Box>
           </Box>
         </Grid>
       </Grid>
