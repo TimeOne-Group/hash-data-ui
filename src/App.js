@@ -16,15 +16,12 @@ import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
 import CSVReader from 'react-csv-reader';
 import { DataGrid } from '@material-ui/data-grid';
 import md5 from 'js-md5';
 import sha256 from 'js-sha256';
+import Fields, { emptyField } from './components/Fields';
+import DisplayError from './components/DisplayError';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,7 +37,8 @@ const initialState = {
   rows: [],
   encoding: 'sha256',
   addedColumnName: 'Added column',
-  field: '',
+  error: '',
+  fields: [emptyField],
 };
 
 function reducer(state, action) {
@@ -50,11 +48,6 @@ function reducer(state, action) {
 export default function App() {
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [error, setError] = React.useState('');
-
-  const handleClose = () => {
-    setError('');
-  };
 
   const loadData = (data, fileInfo) => {
     let i = 0;
@@ -81,11 +74,11 @@ export default function App() {
 
   const encode = () => {
     if (!state.addedColumnName) {
-      return setError('Added column name is empty');
+      return dispatch({ error: 'Added column name is empty' });
     }
 
-    if (!state.field) {
-      return setError('No field selected');
+    if (!state.fields.filter((field) => field.selected).join()) {
+      return dispatch({ error: 'No field selected' });
     }
 
     const columns = state.columns.filter(
@@ -99,11 +92,12 @@ export default function App() {
     });
 
     const rows = state.rows.map((row) => {
+      const string = state.fields.map((field) => row[field.selected]).join();
       let value;
       if (state.encoding === 'md5') {
-        value = md5(row[state.field]);
+        value = md5(string);
       } else if (state.encoding === 'sha256') {
-        value = sha256(row[state.field]);
+        value = sha256(string);
       }
       row['field_add'] = value;
       return row;
@@ -112,37 +106,9 @@ export default function App() {
     dispatch({ columns, rows });
   };
 
-  const DisplayError = () => {
-    if (error) {
-      return (
-        <React.Fragment>
-          <Dialog
-            open={true}
-            onClose={handleClose}
-            aria-labelledby="error-dialog-title"
-          >
-            <DialogTitle id="error-dialog-title">
-              Something went wrong:
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>{error}</DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleClose} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </React.Fragment>
-      );
-    }
-
-    return '';
-  };
-
   return (
     <Div100vh className={classes.root}>
-      <DisplayError />
+      <DisplayError error={state.error} dispatch={dispatch} />
       <AppBar position="static" color="default">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
@@ -227,35 +193,11 @@ export default function App() {
                 <Typography>Fields</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container>
-                  <Grid item xs={12}>
-                    <Box pl={2} pr={2} pb={2}>
-                      <FormControl fullWidth={true}>
-                        <InputLabel id="field-select-label">
-                          Choose field
-                        </InputLabel>
-                        <Select
-                          id="field-select"
-                          value={state.field}
-                          onChange={(event) =>
-                            dispatch({ field: event.target.value })
-                          }
-                        >
-                          {state.columns
-                            .filter((column) => column.field !== 'field_add')
-                            .map((item) => (
-                              <MenuItem
-                                key={`key_${item.field}`}
-                                value={item.field}
-                              >
-                                {item.headerName}
-                              </MenuItem>
-                            ))}
-                        </Select>
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                </Grid>
+                <Fields
+                  fields={state.fields}
+                  columns={state.columns}
+                  dispatch={dispatch}
+                />
               </AccordionDetails>
             </Accordion>
             <Box p={2} mx="auto">
