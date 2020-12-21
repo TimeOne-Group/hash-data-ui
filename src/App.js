@@ -16,6 +16,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
 import CSVReader from 'react-csv-reader';
 import { DataGrid } from '@material-ui/data-grid';
 import md5 from 'js-md5';
@@ -45,6 +50,11 @@ function reducer(state, action) {
 export default function App() {
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [error, setError] = React.useState('');
+
+  const handleClose = () => {
+    setError('');
+  };
 
   const loadData = (data, fileInfo) => {
     let i = 0;
@@ -70,12 +80,12 @@ export default function App() {
   };
 
   const encode = () => {
-    if (!state.field) {
-      throw Error('No field selected');
+    if (!state.addedColumnName) {
+      return setError('Added column name is empty');
     }
 
-    if (!state.addedColumnName) {
-      throw Error('Added column name is empty');
+    if (!state.field) {
+      return setError('No field selected');
     }
 
     const columns = state.columns.filter(
@@ -91,9 +101,9 @@ export default function App() {
     const rows = state.rows.map((row) => {
       let value;
       if (state.encoding === 'md5') {
-        value = md5(row['field_1']);
+        value = md5(row[state.field]);
       } else if (state.encoding === 'sha256') {
-        value = sha256(row['field_1']);
+        value = sha256(row[state.field]);
       }
       row['field_add'] = value;
       return row;
@@ -102,8 +112,37 @@ export default function App() {
     dispatch({ columns, rows });
   };
 
+  const DisplayError = () => {
+    if (error) {
+      return (
+        <React.Fragment>
+          <Dialog
+            open={true}
+            onClose={handleClose}
+            aria-labelledby="error-dialog-title"
+          >
+            <DialogTitle id="error-dialog-title">
+              Something went wrong:
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText>{error}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </React.Fragment>
+      );
+    }
+
+    return '';
+  };
+
   return (
     <Div100vh className={classes.root}>
+      <DisplayError />
       <AppBar position="static" color="default">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
@@ -202,14 +241,16 @@ export default function App() {
                             dispatch({ field: event.target.value })
                           }
                         >
-                          {state.columns.map((item) => (
-                            <MenuItem
-                              key={`key_${item.field}`}
-                              value={item.field}
-                            >
-                              {item.headerName}
-                            </MenuItem>
-                          ))}
+                          {state.columns
+                            .filter((column) => column.field !== 'field_add')
+                            .map((item) => (
+                              <MenuItem
+                                key={`key_${item.field}`}
+                                value={item.field}
+                              >
+                                {item.headerName}
+                              </MenuItem>
+                            ))}
                         </Select>
                       </FormControl>
                     </Box>
