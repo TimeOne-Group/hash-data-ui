@@ -1,11 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import DeleteIcon from '@material-ui/icons/Delete';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
@@ -13,6 +10,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import Divider from '@material-ui/core/Divider';
 import AddIcon from '@material-ui/icons/Add';
+import DeleteButton from './Fields/DeleteButton';
+import Value from './Fields/Value';
 
 const useStyles = makeStyles((theme) => ({
   fab: {
@@ -27,6 +26,9 @@ const useStyles = makeStyles((theme) => ({
 
 const emptyField = {
   selected: '',
+  type: '',
+  constant: '',
+  completed: false,
 };
 
 function Fields({ fields, columns, dispatch }) {
@@ -34,11 +36,6 @@ function Fields({ fields, columns, dispatch }) {
 
   const addField = () => {
     fields.push(emptyField);
-    dispatch({ fields: fields });
-  };
-
-  const deleteField = () => {
-    fields.pop(emptyField);
     dispatch({ fields: fields });
   };
 
@@ -53,44 +50,44 @@ function Fields({ fields, columns, dispatch }) {
                   <Typography variant="h6">{`Field ${index + 1}`}</Typography>
                 </Grid>
                 <Grid item xs={1}>
-                  {index === 0 ? (
-                    ''
-                  ) : (
-                    <IconButton
-                      aria-label="delete"
-                      className={classes.delete}
-                      onClick={deleteField}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  )}
+                  <DeleteButton
+                    index={index}
+                    fields={fields}
+                    className={classes.delete}
+                    dispatch={dispatch}
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl fullWidth={true}>
-                    <InputLabel id={`field-select-label-${index}`}>
-                      Choose field
+                    <InputLabel id={`field-type-select-label-${index}`}>
+                      Choose type
                     </InputLabel>
                     <Select
-                      id={`field-select-${index}`}
-                      value={field.selected}
+                      id="field-type-select"
+                      value={field.type}
                       onChange={(event) => {
                         fields[index] = {
-                          selected: event.target.value,
+                          ...field,
+                          type: event.target.value,
+                          selected: '',
+                          constant: '',
+                          completed: false,
                         };
                         dispatch({ fields });
                       }}
                     >
-                      {columns
-                        .filter((column) => column.field !== 'field_add')
-                        .map((item) => (
-                          <MenuItem
-                            key={`key_${item.field}`}
-                            value={item.field}
-                          >
-                            {item.headerName}
-                          </MenuItem>
-                        ))}
+                      <MenuItem value="constant">Constant</MenuItem>
+                      <MenuItem value="field">Imported field</MenuItem>
                     </Select>
+                  </FormControl>
+                  <FormControl fullWidth={true}>
+                    <Value
+                      field={field}
+                      index={index}
+                      dispatch={dispatch}
+                      columns={columns}
+                      fields={fields}
+                    />
                   </FormControl>
                 </Grid>
               </Grid>
@@ -115,18 +112,6 @@ function Fields({ fields, columns, dispatch }) {
     </Grid>
   );
 }
-
-Fields.defaultProps = {
-  fields: [emptyField],
-  columns: [],
-  dispatch: (d) => console.log(d),
-};
-
-Fields.propTypes = {
-  fields: PropTypes.arrayOf(PropTypes.object),
-  columns: PropTypes.instanceOf(Array),
-  dispatch: PropTypes.func,
-};
 
 export default Fields;
 export { emptyField };

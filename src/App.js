@@ -77,7 +77,10 @@ export default function App() {
       return dispatch({ error: 'Added column name is empty' });
     }
 
-    if (!state.fields.filter((field) => field.selected).join()) {
+    if (
+      state.fields.filter((field) => field.completed).length !==
+      state.fields.length
+    ) {
       return dispatch({ error: 'No field selected' });
     }
 
