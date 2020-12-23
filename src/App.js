@@ -95,7 +95,10 @@ export default function App() {
     });
 
     const rows = state.rows.map((row) => {
-      const string = state.fields.map((field) => row[field.selected]).join();
+      const string = state.fields
+        .map((field) => (field.selected ? row[field.selected] : field.constant))
+        .join('');
+      console.log(string);
       let value;
       if (state.encoding === 'md5') {
         value = md5(string);
