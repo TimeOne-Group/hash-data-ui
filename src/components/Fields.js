@@ -10,6 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import Divider from '@material-ui/core/Divider';
 import AddIcon from '@material-ui/icons/Add';
+import Input from '@material-ui/core/Input';
 import DeleteButton from './Fields/DeleteButton';
 import Value from './Fields/Value';
 
@@ -29,6 +30,7 @@ const emptyField = {
   type: '',
   constant: '',
   completed: false,
+  funcs: [],
 };
 
 function Fields({ fields, columns, dispatch }) {
@@ -88,6 +90,36 @@ function Fields({ fields, columns, dispatch }) {
                       columns={columns}
                       fields={fields}
                     />
+                  </FormControl>
+                  <FormControl fullWidth={true}>
+                    <InputLabel id={`field-func-select-label-${index}`}>
+                      Functions to perform
+                    </InputLabel>
+                    <Select
+                      labelId={`field-func-select-label-${index}`}
+                      id={`field-func-select-${index}`}
+                      multiple
+                      value={field.funcs}
+                      onChange={(event) => {
+                        fields[index] = {
+                          ...field,
+                          funcs: event.target.value,
+                        };
+                        dispatch({ fields });
+                      }}
+                      input={<Input />}
+                    >
+                      {['toLowerCase', 'toUpperCase', 'no accent'].map(
+                        (func) => (
+                          <MenuItem
+                            key={`field-func-item-${func}-${index}`}
+                            value={func}
+                          >
+                            {func}
+                          </MenuItem>
+                        )
+                      )}
+                    </Select>
                   </FormControl>
                 </Grid>
               </Grid>

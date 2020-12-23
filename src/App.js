@@ -22,6 +22,7 @@ import md5 from 'js-md5';
 import sha256 from 'js-sha256';
 import Fields, { emptyField } from './components/Fields';
 import DisplayError from './components/DisplayError';
+import noAccent from './utils/noAccent';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -72,6 +73,29 @@ export default function App() {
     dispatch({ columns, rows });
   };
 
+  const performFunctions = (funcs, string) => {
+    funcs.forEach((func) => {
+      switch (func) {
+        case 'toLowerCase':
+          string = string.toLowerCase();
+          break;
+
+        case 'toUpperCase':
+          string = string.toUpperCase();
+          break;
+
+        case 'no accent':
+          string = noAccent(string);
+          break;
+
+        default:
+          break;
+      }
+    });
+
+    return string;
+  };
+
   const encode = () => {
     if (!state.addedColumnName) {
       return dispatch({ error: 'Added column name is empty' });
@@ -96,7 +120,12 @@ export default function App() {
 
     const rows = state.rows.map((row) => {
       const string = state.fields
-        .map((field) => (field.selected ? row[field.selected] : field.constant))
+        .map((field) =>
+          performFunctions(
+            field.funcs,
+            field.selected ? row[field.selected] : field.constant
+          )
+        )
         .join('');
       console.log(string);
       let value;
