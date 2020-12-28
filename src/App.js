@@ -10,19 +10,13 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import CSVReader from 'react-csv-reader';
 import { DataGrid } from '@material-ui/data-grid';
-import md5 from 'js-md5';
-import sha256 from 'js-sha256';
 import Fields, { emptyField } from './components/Fields';
 import DisplayError from './components/DisplayError';
-import noAccent from './utils/noAccent';
+import CSV from './components/CSV';
+import Encoding from './components/Encoding';
+import LoadCSV from './components/LoadCSV';
+import ButtonEncode from './components/ButtonEncode';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -40,6 +34,7 @@ const initialState = {
   addedColumnName: 'Added column',
   error: '',
   fields: [emptyField],
+  csv: [],
 };
 
 function reducer(state, action) {
@@ -50,97 +45,6 @@ export default function App() {
   const classes = useStyles();
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const loadData = (data, fileInfo) => {
-    let i = 0;
-    const columns = data[0].map((element) => {
-      i++;
-      return { field: `field_${i}`, headerName: element, width: 250 };
-    });
-    data.shift();
-
-    let y = 0;
-    const rows = data.map((row) => {
-      y++;
-      const datas = { id: y };
-      i = 0;
-      row.forEach((value) => {
-        i++;
-        datas[`field_${i}`] = value;
-      });
-      return datas;
-    });
-
-    dispatch({ columns, rows });
-  };
-
-  const performFunctions = (funcs, string) => {
-    funcs.forEach((func) => {
-      switch (func) {
-        case 'toLowerCase':
-          string = string.toLowerCase();
-          break;
-
-        case 'toUpperCase':
-          string = string.toUpperCase();
-          break;
-
-        case 'no accent':
-          string = noAccent(string);
-          break;
-
-        default:
-          break;
-      }
-    });
-
-    return string;
-  };
-
-  const encode = () => {
-    if (!state.addedColumnName) {
-      return dispatch({ error: 'Added column name is empty' });
-    }
-
-    if (
-      state.fields.filter((field) => field.completed).length !==
-      state.fields.length
-    ) {
-      return dispatch({ error: 'No field selected' });
-    }
-
-    const columns = state.columns.filter(
-      (column) => column.field !== 'field_add'
-    );
-
-    columns.push({
-      field: 'field_add',
-      headerName: state.addedColumnName,
-      width: 250,
-    });
-
-    const rows = state.rows.map((row) => {
-      const string = state.fields
-        .map((field) =>
-          performFunctions(
-            field.funcs,
-            field.selected ? row[field.selected] : field.constant
-          )
-        )
-        .join('');
-      console.log(string);
-      let value;
-      if (state.encoding === 'md5') {
-        value = md5(string);
-      } else if (state.encoding === 'sha256') {
-        value = sha256(string);
-      }
-      row['field_add'] = value;
-      return row;
-    });
-
-    dispatch({ columns, rows });
-  };
-
   return (
     <Div100vh className={classes.root}>
       <DisplayError error={state.error} dispatch={dispatch} />
@@ -150,14 +54,7 @@ export default function App() {
             Encode File UI
           </Typography>
           <label htmlFor="upload-photo">
-            <CSVReader
-              inputId="upload-photo"
-              inputStyle={{ display: 'none' }}
-              onFileLoaded={loadData}
-            />
-            <Button color="inherit" component="span">
-              Load CSV File
-            </Button>
+            <LoadCSV dispatch={dispatch} />
           </label>
         </Toolbar>
       </AppBar>
@@ -182,41 +79,11 @@ export default function App() {
                 <Typography>Encoding</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container>
-                  <Grid item xs={12}>
-                    <Box p={2}>
-                      <FormControl fullWidth={true}>
-                        <TextField
-                          id="column_name"
-                          label="Added column name"
-                          value={state.addedColumnName}
-                          onChange={(event) =>
-                            dispatch({ addedColumnName: event.target.value })
-                          }
-                        />
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box p={2}>
-                      <FormControl fullWidth={true}>
-                        <InputLabel id="encoding-select-label">
-                          Choose encoding
-                        </InputLabel>
-                        <Select
-                          id="encoding-select"
-                          value={state.encoding}
-                          onChange={(event) =>
-                            dispatch({ encoding: event.target.value })
-                          }
-                        >
-                          <MenuItem value="md5">MD5</MenuItem>
-                          <MenuItem value="sha256">SHA256</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </Box>
-                  </Grid>
-                </Grid>
+                <Encoding
+                  addedColumnName={state.addedColumnName}
+                  encoding={state.encoding}
+                  dispatch={dispatch}
+                />
               </AccordionDetails>
             </Accordion>
             <Accordion>
@@ -236,14 +103,10 @@ export default function App() {
               </AccordionDetails>
             </Accordion>
             <Box p={2} mx="auto">
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={encode}
-              >
-                Encode
-              </Button>
+              <ButtonEncode {...state} dispatch={dispatch} />
+            </Box>
+            <Box pt={0.4} pb={2} pl={2} pr={2} mx="auto">
+              <CSV csv={state.csv} />
             </Box>
           </Box>
         </Grid>
