@@ -58,3 +58,11 @@ docker-compose up
 ```bash
 docker-compose run --rm app npm run test
 ```
+
+## Production
+
+### Build
+
+```bash
+docker-compose run --rm app npm run build
+```
