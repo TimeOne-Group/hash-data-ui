@@ -44,7 +44,7 @@ docker-compose run --rm app npm i
 
 Si vous utilisez Visual Code Studio
 ```bash
-bash .dev/setup.sh
+bash .dev/scripts/setup.sh
 ```
 
 ### Lancement du projet
