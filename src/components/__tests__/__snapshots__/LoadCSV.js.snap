@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadCSV is being rendered 1`] = `
+<label
+  htmlFor="upload-csv"
+>
+  <div
+    className="csv-reader-input"
+  >
+    <input
+      accept=".csv, text/csv"
+      className="csv-input"
+      disabled={false}
+      id="upload-csv"
+      onChange={[Function]}
+      style={
+        Object {
+          "display": "none",
+        }
+      }
+      type="file"
+    />
+  </div>
+  <span
+    aria-disabled={false}
+    className="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-colorInherit"
+    onBlur={[Function]}
+    onDragLeave={[Function]}
+    onFocus={[Function]}
+    onKeyDown={[Function]}
+    onKeyUp={[Function]}
+    onMouseDown={[Function]}
+    onMouseLeave={[Function]}
+    onMouseUp={[Function]}
+    onTouchEnd={[Function]}
+    onTouchMove={[Function]}
+    onTouchStart={[Function]}
+    role="button"
+    tabIndex={0}
+  >
+    <span
+      className="MuiButton-label"
+    >
+      Load CSV File
+    </span>
+  </span>
+</label>
+`;
