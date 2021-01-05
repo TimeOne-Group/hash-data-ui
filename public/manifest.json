@@ -1,6 +1,6 @@
 {
-  "short_name": "Encode File UI",
-  "name": "UI to encode CSV file",
+  "short_name": "Hash Data UI",
+  "name": "UI to hash data in CSV file",
   "icons": [
     {
       "src": "icon.ong",

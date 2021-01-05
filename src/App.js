@@ -14,9 +14,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import Fields, { emptyField } from './components/Fields';
 import DisplayError from './components/DisplayError';
 import CSV from './components/CSV';
-import Encoding from './components/Encoding';
+import Hashing from './components/Hashing';
 import LoadCSV from './components/LoadCSV';
-import ButtonEncode from './components/ButtonEncode';
+import ButtonHash from './components/ButtonHash';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 const initialState = {
   columns: [],
   rows: [],
-  encoding: 'sha256',
+  hashing: 'sha256',
   addedColumnName: 'Added column',
   error: '',
   fields: [emptyField],
@@ -51,7 +51,7 @@ export default function App() {
       <AppBar position="static" color="default">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            Encode File UI
+            Hash Data UI
           </Typography>
           <label htmlFor="upload-photo">
             <LoadCSV dispatch={dispatch} />
@@ -73,15 +73,15 @@ export default function App() {
             <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel-encoding-content"
-                id="panel-encoding-header"
+                aria-controls="panel-hashing-content"
+                id="panel-hashing-header"
               >
-                <Typography>Encoding</Typography>
+                <Typography>Hashing</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Encoding
+                <Hashing
                   addedColumnName={state.addedColumnName}
-                  encoding={state.encoding}
+                  hashing={state.hashing}
                   dispatch={dispatch}
                 />
               </AccordionDetails>
@@ -103,7 +103,7 @@ export default function App() {
               </AccordionDetails>
             </Accordion>
             <Box p={2} mx="auto">
-              <ButtonEncode {...state} dispatch={dispatch} />
+              <ButtonHash {...state} dispatch={dispatch} />
             </Box>
             <Box pt={0.4} pb={2} pl={2} pr={2} mx="auto">
               <CSV csv={state.csv} />

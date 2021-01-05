@@ -27,12 +27,12 @@ const performFunctions = (funcs, string) => {
   return string;
 };
 
-const ButtonEncode = ({
+const ButtonHash = ({
   addedColumnName,
   columns,
   rows,
   fields,
-  encoding,
+  hashing,
   dispatch,
 }) => {
   const encode = () => {
@@ -63,9 +63,9 @@ const ButtonEncode = ({
         .join('');
 
       let value;
-      if (encoding === 'md5') {
+      if (hashing === 'md5') {
         value = md5(string);
-      } else if (encoding === 'sha256') {
+      } else if (hashing === 'sha256') {
         value = sha256(string);
       }
       row['field_add'] = value;
@@ -74,7 +74,7 @@ const ButtonEncode = ({
 
     const csv = [];
 
-    csv.push(columns.map((column) => column.headerName));
+    csv.push(newColumns.map((column) => column.headerName));
     rows.forEach((row) =>
       csv.push(
         Object.entries(row)
@@ -87,9 +87,9 @@ const ButtonEncode = ({
   };
   return (
     <Button variant="contained" color="primary" fullWidth onClick={encode}>
-      Encode
+      Hash
     </Button>
   );
 };
 
-export default ButtonEncode;
+export default ButtonHash;

@@ -7,7 +7,7 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
-const Encoding = ({ addedColumnName, encoding, dispatch }) => {
+const Hashing = ({ addedColumnName, hashing, dispatch }) => {
   return (
     <Grid container>
       <Grid item xs={12}>
@@ -27,11 +27,13 @@ const Encoding = ({ addedColumnName, encoding, dispatch }) => {
       <Grid item xs={12}>
         <Box p={2}>
           <FormControl fullWidth={true}>
-            <InputLabel id="encoding-select-label">Choose encoding</InputLabel>
+            <InputLabel id="hashing-select-label">
+              Choose hash function
+            </InputLabel>
             <Select
-              id="encoding-select"
-              value={encoding}
-              onChange={(event) => dispatch({ encoding: event.target.value })}
+              id="hashing-select"
+              value={hashing}
+              onChange={(event) => dispatch({ hashing: event.target.value })}
             >
               <MenuItem value="md5">MD5</MenuItem>
               <MenuItem value="sha256">SHA256</MenuItem>
@@ -43,4 +45,4 @@ const Encoding = ({ addedColumnName, encoding, dispatch }) => {
   );
 };
 
-export default Encoding;
+export default Hashing;

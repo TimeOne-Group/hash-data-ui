@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Encoding is being rendered 1`] = `
+exports[`Hashing is being rendered 1`] = `
 <div
   className="MuiGrid-root MuiGrid-container"
 >
@@ -58,9 +58,9 @@ exports[`Encoding is being rendered 1`] = `
         <label
           className="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
           data-shrink={false}
-          id="encoding-select-label"
+          id="hashing-select-label"
         >
-          Choose encoding
+          Choose hash function
         </label>
         <div
           className="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
@@ -68,9 +68,9 @@ exports[`Encoding is being rendered 1`] = `
         >
           <div
             aria-haspopup="listbox"
-            aria-labelledby="encoding-select"
+            aria-labelledby="hashing-select"
             className="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-            id="encoding-select"
+            id="hashing-select"
             onBlur={[Function]}
             onFocus={[Function]}
             onKeyDown={[Function]}
