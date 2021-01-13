@@ -27,6 +27,15 @@ const performFunctions = (funcs, string) => {
   return string;
 };
 
+function getHashedValue(name, string) {
+  const hash = {
+    md5,
+    sha256,
+  };
+
+  return hash[name] && hash[name](string);
+}
+
 const ButtonHash = ({
   addedColumnName,
   columns,
@@ -62,29 +71,25 @@ const ButtonHash = ({
         )
         .join('');
 
-      let value;
-      if (hashing === 'md5') {
-        value = md5(string);
-      } else if (hashing === 'sha256') {
-        value = sha256(string);
-      }
-      row['field_add'] = value;
+      row['field_add'] = getHashedValue(hashing, string);
+
       return row;
     });
 
-    const csv = [];
-
-    csv.push(newColumns.map((column) => column.headerName));
-    rows.forEach((row) =>
-      csv.push(
-        Object.entries(row)
+    const csv = rows.reduce(
+      (acc, row) => {
+        const entry = Object.entries(row)
           .filter((value) => value[0] !== 'id')
-          .map((value) => value[1])
-      )
+          .map((value) => value[1]);
+
+        return [...acc, entry];
+      },
+      [newColumns.map((column) => column.headerName)]
     );
 
     dispatch({ columns: newColumns, rows: newRows, csv });
   };
+
   return (
     <Button variant="contained" color="primary" fullWidth onClick={encode}>
       Hash
