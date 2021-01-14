@@ -4,13 +4,14 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
 const DeleteButton = ({ index, className, fields, dispatch }) => {
   const deleteField = () => {
-    fields.pop();
-    dispatch({ fields: fields });
+    dispatch({ fields: fields.filter((_, idx) => idx !== index) });
   };
 
-  return index === 0 ? (
-    ''
-  ) : (
+  if (index === 0) {
+    return '';
+  }
+
+  return (
     <IconButton aria-label="delete" className={className} onClick={deleteField}>
       <DeleteIcon fontSize="small" />
     </IconButton>

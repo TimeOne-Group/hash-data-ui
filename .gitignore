@@ -26,4 +26,5 @@ yarn-error.log*
 .idea
 .remote-sync.json
 .vscode/*
+!.vscode/launch.json
 !.vscode/settings_default.json
